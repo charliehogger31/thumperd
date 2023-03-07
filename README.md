@@ -20,3 +20,4 @@ This file MUST contain an empty newline at the end.
 The order in which the plugins are loaded effect the 'interrupt vector' which they can be called from.
 In order for brainfuck programs to jump to plugin code they must have the vector in the current cell then use the '!' operator to jump to the plugin entry point.
 Plugins must be able to be loaded by dlopen.
+> Note: COBOL can be used to create plugins.
