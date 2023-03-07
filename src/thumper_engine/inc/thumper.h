@@ -2,8 +2,13 @@
 #define THUMPERD_THUMPER_H
 
 #include <stdint.h>
-#include "stack.h"
+#include <signal.h>
 
+#include "stack.h"
+#include "thumper_plugin_def.h"
+
+// Engine emulator trap signal
+#define SIGEMT SIGUSR1
 
 typedef struct {
     uint64_t buffer_length;
@@ -12,7 +17,7 @@ typedef struct {
     uint64_t program_length;
     const char *program_buffer;
     uint64_t program_counter;
-    stack_t *stack;
+    te_stack_t *stack;
     uint8_t *out_buffer;
     uint64_t out_ptr;
     uint64_t out_len;
@@ -24,6 +29,8 @@ typedef struct {
 void te_config_engine(uint64_t default_buffer, uint64_t default_stack, uint64_t default_out);
 
 te_engine_state_t *te_generate_state(const char *program);
+
+void te_register_iv_map(thumper_plugin_entry_t *map);
 
 void te_begin(te_engine_state_t *state);
 

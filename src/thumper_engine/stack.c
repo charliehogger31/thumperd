@@ -2,8 +2,8 @@
 
 #include <stdlib.h>
 
-stack_t *gen_stack(uint64_t size) {
-    stack_t *stack = malloc(sizeof(stack_t));
+te_stack_t *gen_stack(uint64_t size) {
+    te_stack_t *stack = malloc(sizeof(te_stack_t));
     if (stack == NULL) return NULL;
 
     stack->stack_base = malloc(size * sizeof(uint64_t));
@@ -18,18 +18,18 @@ stack_t *gen_stack(uint64_t size) {
     return stack;
 }
 
-void push(stack_t *stack, uint64_t val) {
+void push(te_stack_t *stack, uint64_t val) {
     stack->stack_base[stack->stack_pointer] = val;
     stack->stack_pointer++;
     if (stack->stack_pointer >= stack->stack_len) stack->stack_pointer = 0;
 }
 
-uint64_t pop(stack_t *stack) {
+uint64_t pop(te_stack_t *stack) {
     stack->stack_pointer--;
     return stack->stack_base[stack->stack_pointer];
 }
 
-void free_stack(stack_t *stack) {
+void free_stack(te_stack_t *stack) {
     free(stack->stack_base);
     free(stack);
 }

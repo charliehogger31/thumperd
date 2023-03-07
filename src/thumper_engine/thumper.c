@@ -2,15 +2,44 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <signal.h>
+
+#ifdef EMULATOR_PLEASE_TRAP
+#define TRAP() raise(SIGEMT)
+#else
+#define TRAP()
+#endif
 
 static uint64_t def_buf_sz = 30000;
 static uint64_t def_stack_sz = 100;
 static uint64_t def_out_buffer = 1000;
 
+static thumper_plugin_entry_t *engine_iv_topology = NULL;
+static int plug_count = 0;
+
 void te_config_engine(uint64_t default_buffer, uint64_t default_stack, uint64_t default_out) {
     def_buf_sz = default_buffer;
     def_stack_sz = default_stack;
     def_out_buffer = default_out;
+}
+
+void te_register_iv_map(thumper_plugin_entry_t *map) {
+    int i = 0;
+    while (map[i] != NULL) {
+        plug_count++;
+        i++;
+    }
+    engine_iv_topology = map;
+}
+
+engine_state_external_plugin_handoff_t *handoff_from_state(te_engine_state_t *state) {
+    engine_state_external_plugin_handoff_t *handoff = malloc(sizeof(engine_state_external_plugin_handoff_t));
+    handoff->buffer_pointer = state->buffer_pointer;
+    handoff->buffer_length = state->buffer_length;
+    handoff->buffer = state->buffer;
+    handoff->state_test = 0;
+    handoff->calling_vector = state->buffer[state->buffer_pointer];
+    return handoff;
 }
 
 te_engine_state_t *te_generate_state(const char *program) {
@@ -73,7 +102,10 @@ void te_begin(te_engine_state_t *state) {
                     state->buffer[state->buffer_pointer] = state->in_buffer[state->in_ptr];
                     state->in_ptr++;
                     if (state->in_ptr >= state->in_len) state->in_ptr = 0;
-                } else state->buffer[state->buffer_pointer] = 0;
+                } else {
+                    state->buffer[state->buffer_pointer] = 0;
+                    TRAP();
+                }
                 break;
             case '[':
                 if (state->buffer[state->buffer_pointer] == 0) {
@@ -92,6 +124,19 @@ void te_begin(te_engine_state_t *state) {
                     state->program_counter = pop(state->stack)-1;
                 else
                     pop(state->stack);
+                break;
+            case '!':
+                if (engine_iv_topology != NULL) {
+                    if (state->buffer[state->buffer_pointer] >= plug_count) {
+                        TRAP();
+                    }
+                    engine_state_external_plugin_handoff_t *handoff =
+                            handoff_from_state(state);
+                    engine_iv_topology[state->buffer[state->buffer_pointer]](handoff);
+                    free(handoff);
+                } else {
+                    TRAP();
+                }
                 break;
         }
 

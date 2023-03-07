@@ -75,7 +75,7 @@ enum MHD_Result answer_to_connection(void *cls, struct MHD_Connection *connectio
 
                 char *adv_ptr = full_file + i + 1;
 
-                char *program = malloc(strlen(adv_ptr));
+                char *program = malloc(strlen(adv_ptr)+1);
                 memset(program, 0, strlen(adv_ptr));
                 strcpy(program, adv_ptr);
 
@@ -91,7 +91,7 @@ enum MHD_Result answer_to_connection(void *cls, struct MHD_Connection *connectio
                         strlen(full_file) + strlen((char *) state->out_buffer) + strlen(full_file + next + 1) + 1;
                 full_resp = malloc(resp_len);
                 if (full_resp == NULL) break;
-                full_resp[resp_len] = '\0';
+                full_resp[resp_len-1] = '\0';
                 strcpy(full_resp, full_file);
                 strcat(full_resp, (char *) state->out_buffer);
                 strcat(full_resp, full_file + next + 1);
