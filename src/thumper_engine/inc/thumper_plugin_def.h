@@ -10,6 +10,7 @@ typedef struct {
     uint8_t state_test;
     uint8_t calling_vector;
 } __attribute__((packed, aligned(sizeof(void*)))) engine_state_external_plugin_handoff_t;
+// IF IT IS NOT ALIGNED SIGBUS!!!!!!
 
 typedef void(*thumper_plugin_entry_t)(engine_state_external_plugin_handoff_t *state);
 
