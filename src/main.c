@@ -5,7 +5,7 @@
 #include <dlfcn.h>
 #include <linux/limits.h>
 
-#define DEBUG_PORT 8888 // Remove these debug values later pls
+#define DEFAULT_PORT 8888
 
 #define TE_MAX_PLUG 4096
 
@@ -79,10 +79,10 @@ int main() {
         char *end;
         port_int = strtol(port_env, &end, 10);
         if (*end != '\0') {
-            port_int = DEBUG_PORT;
+            port_int = DEFAULT_PORT;
         }
     } else {
-        port_int = DEBUG_PORT;
+        port_int = DEFAULT_PORT;
     }
 
     signal(SIGEMT, sigemt);
