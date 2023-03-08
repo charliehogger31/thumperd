@@ -16,6 +16,10 @@
 // to lazy to make header file
 char *load_file(const char *path);
 
+void sigemt(int sig) {
+    printf("[WARN] Emulator hit a trap.\n");
+}
+
 const char **load_line_by_line(const char *file_path) {
     FILE *line_file = fopen(file_path, "r");
     if (line_file == NULL) return NULL;
@@ -79,6 +83,8 @@ int main() {
     } else {
         port_int = DEBUG_PORT;
     }
+
+    signal(SIGEMT, sigemt);
 
     struct MHD_Daemon *daemon;
     daemon = MHD_start_daemon(MHD_USE_THREAD_PER_CONNECTION, port_int, NULL, NULL,
