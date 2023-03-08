@@ -48,7 +48,7 @@ int main() {
     thumper_plugin_entry_t *plugins = malloc(TE_MAX_PLUG * sizeof(thumper_plugin_entry_t));
     memset(plugins, 0, TE_MAX_PLUG * sizeof(thumper_plugin_entry_t));
     if (list_file_path != NULL) {
-        const char ** lines = load_line_by_line(list_file_path);
+        const char **lines = load_line_by_line(list_file_path);
         int i = 0;
         while (lines[i] != NULL) {
             printf("[INFO] Loading plugin: %s\n", lines[i]);
@@ -61,10 +61,11 @@ int main() {
             thumper_plugin_entry_t plugin = dlsym(handle, "te_plugin_entry");
             if (plugin == NULL) {
                 printf("[FATAL]: dlsym failed on %s\n", lines[i]);
+                perror("dlsym");
                 return 1;
             }
             plugins[i] = plugin;
-            free((void*)lines[i]);
+            free((void *) lines[i]);
             i++;
         }
 
@@ -86,9 +87,31 @@ int main() {
 
     signal(SIGEMT, sigemt);
 
+    int use_tls = 0;
+    const char *tls_env = getenv("TE_USE_TLS");
+    const char *tls_cert = getenv("TE_TLS_CERT");
+    const char *tls_key = getenv("TE_TLS_KEY");
+
+    if (tls_key != NULL && tls_cert != NULL && tls_env != NULL) {
+        if (strcmp(tls_env, "YES") == 0) {
+            use_tls = 1;
+        }
+    }
+
     struct MHD_Daemon *daemon;
-    daemon = MHD_start_daemon(MHD_USE_THREAD_PER_CONNECTION, port_int, NULL, NULL,
-                              &answer_to_connection, NULL, MHD_OPTION_END);
+    if (use_tls) {
+        const char *key = load_file(tls_key);
+        const char *cert = load_file(tls_cert);
+        if (key == NULL || cert == NULL) {
+            printf("[FATAL] Cert or key file %s, %s returned null.\n", tls_cert, tls_key);
+            return 1;
+        }
+        daemon = MHD_start_daemon(MHD_USE_THREAD_PER_CONNECTION | MHD_USE_TLS, port_int, NULL, NULL,
+                                  &answer_to_connection, NULL, MHD_OPTION_HTTPS_MEM_CERT, cert, MHD_OPTION_HTTPS_MEM_KEY, key,
+                                  MHD_OPTION_END);
+    } else
+        daemon = MHD_start_daemon(MHD_USE_THREAD_PER_CONNECTION, port_int, NULL, NULL,
+                                  &answer_to_connection, NULL, MHD_OPTION_END);
 
     getchar();
 
