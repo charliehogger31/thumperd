@@ -92,18 +92,17 @@ int main() {
     const char *tls_cert = getenv("TE_TLS_CERT");
     const char *tls_key = getenv("TE_TLS_KEY");
 
-    if (tls_key != NULL && tls_cert != NULL && tls_env != NULL) {
-        if (strcmp(tls_env, "YES") == 0) {
+    if (tls_key != NULL && tls_cert != NULL && tls_env != NULL)
+        if (strcmp(tls_env, "YES") == 0)
             use_tls = 1;
-        }
-    }
+
 
     struct MHD_Daemon *daemon;
     if (use_tls) {
         const char *key = load_file(tls_key);
         const char *cert = load_file(tls_cert);
         if (key == NULL || cert == NULL) {
-            printf("[FATAL] Cert or key file %s, %s returned null.\n", tls_cert, tls_key);
+            printf("[FATAL] Cert or key load_file %s, %s returned null.\n", tls_cert, tls_key);
             return 1;
         }
         daemon = MHD_start_daemon(MHD_USE_THREAD_PER_CONNECTION | MHD_USE_TLS, port_int, NULL, NULL,

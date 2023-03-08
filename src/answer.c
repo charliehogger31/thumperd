@@ -5,6 +5,7 @@
 #include <stdlib.h>
 
 #include "thumper_engine/inc/thumper.h"
+#include "inc/pages.h"
 
 char *load_file(const char *path) {
     FILE *file = fopen(path, "r");
@@ -46,7 +47,7 @@ enum MHD_Result answer_to_connection(void *cls, struct MHD_Connection *connectio
     char *full_file = load_file(full_path);
 
     if (full_file == NULL) {
-        response = MHD_create_response_from_buffer(strlen("NOT FOUND"), "NOT FOUND", MHD_RESPMEM_PERSISTENT);
+        response = MHD_create_response_from_buffer(strlen(TE_PAGE_404), TE_PAGE_404, MHD_RESPMEM_PERSISTENT);
         ret = MHD_queue_response(connection, MHD_HTTP_NOT_FOUND, response);
         return ret;
     }
@@ -69,7 +70,7 @@ enum MHD_Result answer_to_connection(void *cls, struct MHD_Connection *connectio
                     }
                 }
 
-                if (next == i) break; // TODO: proper error handling
+                if (next == i) break;
 
                 full_file[next] = '\0';
 
@@ -106,7 +107,7 @@ enum MHD_Result answer_to_connection(void *cls, struct MHD_Connection *connectio
         }
     }
     if (full_resp == NULL) {
-        response = MHD_create_response_from_buffer(strlen("INTERNAL ERROR"), "INTERNAL ERROR", MHD_RESPMEM_PERSISTENT);
+        response = MHD_create_response_from_buffer(strlen(TE_PAGE_500), TE_PAGE_500, MHD_RESPMEM_PERSISTENT);
         ret = MHD_queue_response(connection, MHD_HTTP_INTERNAL_SERVER_ERROR, response);
         return ret;
     }
