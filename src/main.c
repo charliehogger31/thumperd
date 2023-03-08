@@ -60,19 +60,32 @@ int main() {
                 return 1;
             }
             plugins[i] = plugin;
+            free((void*)lines[i]);
             i++;
         }
 
+        free(lines);
         te_register_iv_map(plugins);
     }
 
+    const char *port_env = getenv("TE_PORT");
+    long port_int;
+    if (port_env != NULL) {
+        char *end;
+        port_int = strtol(port_env, &end, 10);
+        if (*end != '\0') {
+            port_int = DEBUG_PORT;
+        }
+    } else {
+        port_int = DEBUG_PORT;
+    }
+
     struct MHD_Daemon *daemon;
-    daemon = MHD_start_daemon(MHD_USE_THREAD_PER_CONNECTION, DEBUG_PORT, NULL, NULL,
+    daemon = MHD_start_daemon(MHD_USE_THREAD_PER_CONNECTION, port_int, NULL, NULL,
                               &answer_to_connection, NULL, MHD_OPTION_END);
 
     getchar();
 
     MHD_stop_daemon(daemon);
-
     return 0;
 }
